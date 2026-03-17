@@ -57,7 +57,7 @@ const App: React.FC = () => {
             intervalos.current.forEach(id => id && clearInterval(id));
             intervalos.current = Array(colores.length).fill(null);
         };
-        // eslint-disable-next-line
+
     }, [cuadrosDetenidos, colores.length]);
 
     // Función para reiniciar el juego (colores y cuadros vuelven a su estado inicial)
