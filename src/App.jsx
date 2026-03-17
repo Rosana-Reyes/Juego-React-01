@@ -1,52 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// lista de colores para los cuadros
-const colores = ['rojo', 'azul', 'verde'];
+// lista de colores hexadecimales para los cuadros
+const colores = ['#ff1900', '#0099ff', '#00a444'];
+
+// Variable global para la cantidad de cuadros
+const CANTIDAD_CUADROS = 3;
 
 // Componente principal del juego
 const App = () => {
   // Estado para saber si cada cuadro está detenido
-  const [cuadrosDetenidos, setCuadrosDetenidos] = useState([false, false, false]);
+  const [cuadrosDetenidos, setCuadrosDetenidos] = useState(Array(CANTIDAD_CUADROS).fill(false));
   // Estado para los colores actuales de los cuadros
-  const [coloresActuales, setColoresActuales] = useState([
-    colores[Math.floor(Math.random() * colores.length)],
-    colores[Math.floor(Math.random() * colores.length)],
-    colores[Math.floor(Math.random() * colores.length)]
-  ]);
+  const [coloresActuales, setColoresActuales] = useState(
+    Array.from({ length: CANTIDAD_CUADROS }, () => colores[Math.floor(Math.random() * colores.length)])
+  );
   // Estado para el mensaje de resultado (ganaste/perdiste)
   const [resultado, setResultado] = useState('');
   // Referencia para los intervalos de cada cuadro
-  const intervalos = React.useRef([null, null, null]);
+  const intervalos = React.useRef(Array(CANTIDAD_CUADROS).fill(null));
 
   // Este efecto es para el cambio de color de los cuadros, se ejecuta cada vez que cambia el estado de cuadrosDetenidos
   useEffect(() => {
     // Limpio los intervalos anteriores para que no se acumulen
     intervalos.current.forEach(id => clearInterval(id));
-    intervalos.current = [null, null, null];
+    intervalos.current = Array(CANTIDAD_CUADROS).fill(null);
     // Para cada cuadro, si no está detenido, le pongo un intervalo para que cambie de color.
     coloresActuales.forEach((_, indice) => {
       if (!cuadrosDetenidos[indice]) {
         intervalos.current[indice] = setInterval(() => {
-          // Cambio el color del cuadro, pero nunca repito el mismo
           setColoresActuales((prev) => {
-            console.log(`Cuadro ${indice + 1} cambió a:`, prev);
-            if (cuadrosDetenidos[indice]) return prev; // Si está detenido, no hace nada
+            if (cuadrosDetenidos[indice]) return prev;
             let color;
             do {
-              color = colores[Math.floor(Math.random() * colores.length)]; // Se elige un color al azar
-            } while (color === prev[indice]); // Me aseguro que no sea igual al anterior
+              color = colores[Math.floor(Math.random() * colores.length)];
+            } while (color === prev[indice]);
             const copia = [...prev];
-            copia[indice] = color; // Actualizo el color
+            copia[indice] = color;
             return copia;
           });
-        }, 1000); // Cada segundo cambia el color
+        }, 1000);
       }
     });
     // Cuando el componente se desmonta, limpio los intervalos 
     return () => {
       intervalos.current.forEach(id => clearInterval(id));
-      intervalos.current = [null, null, null];
+      intervalos.current = Array(CANTIDAD_CUADROS).fill(null);
     };
     // eslint-disable-next-line
   }, [cuadrosDetenidos]);
@@ -54,14 +53,10 @@ const App = () => {
   // Función para reiniciar el juego
   const reiniciar = () => {
     // Elijo nuevos colores al azar para los cuadros
-    const nuevosColores = [
-      colores[Math.floor(Math.random() * colores.length)], // Color para el primero
-      colores[Math.floor(Math.random() * colores.length)], // Color para el segundo
-      colores[Math.floor(Math.random() * colores.length)]  // Color para el tercero 
-    ];
-    setCuadrosDetenidos([false, false, false]); // Todos los cuadros vuelven a estar en juego
-    setColoresActuales(nuevosColores); // Actualizo los colores
-    setResultado(''); // Borro el mensaje de resultado 
+    const nuevosColores = Array.from({ length: CANTIDAD_CUADROS }, () => colores[Math.floor(Math.random() * colores.length)]);
+    setCuadrosDetenidos(Array(CANTIDAD_CUADROS).fill(false));
+    setColoresActuales(nuevosColores);
+    setResultado('');
   };
 
   // Función para detener el cambio de color de un cuadro
@@ -82,22 +77,20 @@ const App = () => {
 
     // Si hay dos cuadros detenidos y son de diferente color, perdió
     if (nuevosDetenidos.filter(Boolean).length === 2) {
-      if (coloresDetenidos[0] !== coloresDetenidos[1]) {
-        setResultado('¡Perdiste!'); // Aquí muestro que perdió
-        intervalos.current.forEach(id => clearInterval(id)); // Detengo todos los intervalos
+      if (coloresDetenidos.length === 2 && coloresDetenidos[0] !== coloresDetenidos[1]) {
+        setResultado('¡Perdiste!');
+        intervalos.current.forEach(id => clearInterval(id));
       }
     }
-    // Si los tres cuadros están detenidos  
-    if (nuevosDetenidos.filter(Boolean).length === 3) {
-      if (
-        coloresActuales[0] === coloresActuales[1] &&
-        coloresActuales[1] === coloresActuales[2]
-      ) {
-        setResultado('¡Ganaste!'); // Aquí muestro que ganó
+    // Si todos los cuadros están detenidos
+    if (nuevosDetenidos.filter(Boolean).length === CANTIDAD_CUADROS) {
+      const todosIguales = coloresActuales.every((c) => c === coloresActuales[0]);
+      if (todosIguales) {
+        setResultado('¡Ganaste!');
       } else {
-        setResultado('¡Perdiste!'); // Aquí muestro que perdió
+        setResultado('¡Perdiste!');
       }
-      intervalos.current.forEach(id => clearInterval(id)); // Detengo todos los intervalos
+      intervalos.current.forEach(id => clearInterval(id));
     }
   };
 
@@ -107,7 +100,7 @@ const App = () => {
       <div className="contenedor-juego"> {/* Aquí pongo los cuadros uno al lado del otro */}
         {coloresActuales.map((color, indice) => (
           <div key={indice} className="cuadro"> {/* Cada cuadro */}
-            <div className={`color ${color}`}></div> {/* Aquí muestro el color */}
+            <div className="color" style={{ backgroundColor: color }}></div> {/* Aquí muestro el color */}
             {/* Botón para detener el cuadro */}
             <button
               className="btn-detener"
