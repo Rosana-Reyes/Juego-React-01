@@ -1,7 +1,7 @@
 // Importo React y hooks necesarios
 import React, { useState, useEffect, useRef } from 'react';
 
-// Lista de colores hexadecimales para los cuadros (puedes agregar o quitar colores y el juego se adapta)
+// Lista de colores hexadecimales para los cuadros (se pueden agregar o quitar colores y el juego se adapta)
 const colores: string[] = ['#ff1900', '#0099ff', '#00a444'];
 
 
