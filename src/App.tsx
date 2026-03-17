@@ -1,7 +1,5 @@
 // Importo React y hooks necesarios
 import React, { useState, useEffect, useRef } from 'react';
-// Importo los estilos globales
-import './App.css';
 
 // Lista de colores hexadecimales para los cuadros (puedes agregar o quitar colores y el juego se adapta)
 const colores: string[] = ['#ff1900', '#0099ff', '#00a444'];
