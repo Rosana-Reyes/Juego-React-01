@@ -1,27 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './App.css';
+
 
 // lista de colores hexadecimales para los cuadros
 const colores: string[] = ['#ff1900', '#0099ff', '#00a444'];
 
-// Variable global para la cantidad de cuadros
-const CANTIDAD_CUADROS = 3;
-
 const App: React.FC = () => {
     // Estado para saber si cada cuadro está detenido
-    const [cuadrosDetenidos, setCuadrosDetenidos] = useState<boolean[]>(Array(CANTIDAD_CUADROS).fill(false));
+    const [cuadrosDetenidos, setCuadrosDetenidos] = useState<boolean[]>(Array(colores.length).fill(false));
     // Estado para los colores actuales de los cuadros
     const [coloresActuales, setColoresActuales] = useState<string[]>(
-        Array.from({ length: CANTIDAD_CUADROS }, () => colores[Math.floor(Math.random() * colores.length)] as string)
+        Array.from({ length: colores.length }, () => colores[Math.floor(Math.random() * colores.length)] as string)
     );
+
+    // Sincronizar estados si cambia la cantidad de colores
+    React.useEffect(() => {
+        setCuadrosDetenidos(Array(colores.length).fill(false));
+        setColoresActuales(Array.from({ length: colores.length }, () => colores[Math.floor(Math.random() * colores.length)] as string));
+        intervalos.current = Array(colores.length).fill(null);
+    }, [colores.length]);
     // Estado para el mensaje de resultado (ganaste/perdiste)
     const [resultado, setResultado] = useState<string>('');
     // Referencia para los intervalos de cada cuadro
-    const intervalos = useRef<Array<number | null>>(Array(CANTIDAD_CUADROS).fill(null));
+    const intervalos = useRef<Array<number | null>>(Array(colores.length).fill(null));
 
     useEffect(() => {
         intervalos.current.forEach(id => id && clearInterval(id));
-        intervalos.current = Array(CANTIDAD_CUADROS).fill(null);
+        intervalos.current = Array(colores.length).fill(null);
         coloresActuales.forEach((_, indice) => {
             if (!cuadrosDetenidos[indice]) {
                 intervalos.current[indice] = setInterval(() => {
@@ -40,14 +44,14 @@ const App: React.FC = () => {
         });
         return () => {
             intervalos.current.forEach(id => id && clearInterval(id));
-            intervalos.current = Array(CANTIDAD_CUADROS).fill(null);
+            intervalos.current = Array(colores.length).fill(null);
         };
         // eslint-disable-next-line
-    }, [cuadrosDetenidos]);
+    }, [cuadrosDetenidos, colores.length]);
 
     const reiniciar = () => {
-        const nuevosColores: string[] = Array.from({ length: CANTIDAD_CUADROS }, () => colores[Math.floor(Math.random() * colores.length)] as string);
-        setCuadrosDetenidos(Array(CANTIDAD_CUADROS).fill(false));
+        const nuevosColores: string[] = Array.from({ length: colores.length }, () => colores[Math.floor(Math.random() * colores.length)] as string);
+        setCuadrosDetenidos(Array(colores.length).fill(false));
         setColoresActuales(nuevosColores);
         setResultado('');
     };
@@ -68,7 +72,7 @@ const App: React.FC = () => {
                 intervalos.current.forEach(id => id && clearInterval(id));
             }
         }
-        if (nuevosDetenidos.filter(Boolean).length === CANTIDAD_CUADROS) {
+        if (nuevosDetenidos.filter(Boolean).length === colores.length) {
             const todosIguales = coloresActuales.every((c) => c === coloresActuales[0]);
             if (todosIguales) {
                 setResultado('¡Ganaste!');
