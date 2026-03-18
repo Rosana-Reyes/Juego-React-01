@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 const colores: string[] = ['#ff1900', '#0099ff', '#00a444'];
 
 
-// Componente principal del juego
+// Componente principal del juego - para controlar la cantidad de cuadros dependiendo de la cantidad de colores utilizo colores.length como variable principal
 const App: React.FC = () => {
     // Estado para saber si cada cuadro está detenido (true/false por cada cuadro)
     const [cuadrosDetenidos, setCuadrosDetenidos] = useState<boolean[]>(Array(colores.length).fill(false));
