@@ -1,69 +1,28 @@
 // Importo React y hooks necesarios
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, FC, useState } from 'react';
 
+const numeroCuadros = 4;
 // Lista de colores hexadecimales para los cuadros (se pueden agregar o quitar colores y el juego se adapta)
 const colores: string[] = ['#ff1900', '#0099ff', '#00a444'];
 
-
 // Componente principal del juego - para controlar la cantidad de cuadros dependiendo de la cantidad de colores utilizo colores.length como variable principal
-const App: React.FC = () => {
-    // Estado para saber si cada cuadro está detenido (true/false por cada cuadro)
-    const [cuadrosDetenidos, setCuadrosDetenidos] = useState<boolean[]>(Array(colores.length).fill(false));
-
-    // Estado para los colores actuales de los cuadros (un color por cada cuadro)
-    const [coloresActuales, setColoresActuales] = useState<string[]>(
-        Array.from({ length: colores.length }, () => colores[Math.floor(Math.random() * colores.length)] as string)
-    );
-
-    // Sincronizar los estados si cambia la cantidad de colores (por ejemplo, si agregas/quitas colores)
-    React.useEffect(() => {
-        setCuadrosDetenidos(Array(colores.length).fill(false));
-        setColoresActuales(Array.from({ length: colores.length }, () => colores[Math.floor(Math.random() * colores.length)] as string));
-        intervalos.current = Array(colores.length).fill(null); // reinicio los intervalos
-    }, [colores.length]);
-
+const App: FC = () => {
     // Estado para el mensaje de resultado (ganaste/perdiste)
     const [resultado, setResultado] = useState<string>('');
 
     // Referencia para los intervalos de cada cuadro (para poder detenerlos individualmente)
-    const intervalos = useRef<Array<number | null>>(Array(colores.length).fill(null));
+    const intervalos = useRef<Array<number | null>>(Array(numeroCuadros).fill(null));
+    // Estado para saber si cada cuadro está detenido (true/false por cada cuadro)
+    const [cuadrosDetenidos, setCuadrosDetenidos] = useState<boolean[]>(Array(numeroCuadros).fill(false));
 
-    // Efecto para manejar el cambio automático de color de los cuadros
-    useEffect(() => {
-        // Limpio todos los intervalos anteriores
-        intervalos.current.forEach(id => id && clearInterval(id));
-        intervalos.current = Array(colores.length).fill(null);
-
-        // Para cada cuadro, si no está detenido, le asigno un intervalo para que cambie de color cada segundo
-        coloresActuales.forEach((_, indice) => {
-            if (!cuadrosDetenidos[indice]) {
-                intervalos.current[indice] = setInterval(() => {
-                    setColoresActuales((prev) => {
-                        if (cuadrosDetenidos[indice]) return prev; // si el cuadro está detenido, no cambia
-                        let color: string;
-                        do {
-                            color = colores[Math.floor(Math.random() * colores.length)] as string;
-                        } while (color === prev[indice]); // aseguro que no repita el color anterior
-                        const copia = [...prev];
-                        copia[indice] = color;
-                        return copia;
-                    });
-                }, 1000);
-            }
-        });
-
-        // Limpio los intervalos al desmontar o actualizar
-        return () => {
-            intervalos.current.forEach(id => id && clearInterval(id));
-            intervalos.current = Array(colores.length).fill(null);
-        };
-
-    }, [cuadrosDetenidos, colores.length]);
-
+    // Estado para los colores actuales de los cuadros (un color por cada cuadro)
+    const [coloresActuales, setColoresActuales] = useState<string[]>(
+        Array.from({ length: numeroCuadros }, () => colores[Math.floor(Math.random() * numeroCuadros)] as string)
+    );
     // Función para reiniciar el juego (colores y cuadros vuelven a su estado inicial)
     const reiniciar = () => {
-        const nuevosColores: string[] = Array.from({ length: colores.length }, () => colores[Math.floor(Math.random() * colores.length)] as string);
-        setCuadrosDetenidos(Array(colores.length).fill(false));
+        const nuevosColores: string[] = Array.from({ length: numeroCuadros }, () => colores[Math.floor(Math.random() * numeroCuadros)] as string);
+        setCuadrosDetenidos(Array(numeroCuadros).fill(false));
         setColoresActuales(nuevosColores);
         setResultado('');
     };
@@ -92,7 +51,7 @@ const App: React.FC = () => {
             }
         }
         // Si todos los cuadros están detenidos
-        if (nuevosDetenidos.filter(Boolean).length === colores.length) {
+        if (nuevosDetenidos.filter(Boolean).length === numeroCuadros) {
             const todosIguales = coloresActuales.every((c) => c === coloresActuales[0]);
             if (todosIguales) {
                 setResultado('¡Ganaste!');
@@ -102,6 +61,47 @@ const App: React.FC = () => {
             intervalos.current.forEach(id => id && clearInterval(id));
         }
     };
+
+    // Sincronizar los estados si cambia la cantidad de colores (por ejemplo, si agregas/quitas colores)
+    useEffect(() => {
+        setCuadrosDetenidos(Array(numeroCuadros).fill(false));
+        setColoresActuales(Array.from({ length: numeroCuadros }, () => colores[Math.floor(Math.random() * numeroCuadros)] as string));
+        intervalos.current = Array(numeroCuadros).fill(null); // reinicio los intervalos
+    }, [numeroCuadros]);
+
+
+    // Efecto para manejar el cambio automático de color de los cuadros
+    useEffect(() => {
+        // Limpio todos los intervalos anteriores
+        intervalos.current.forEach(id => id && clearInterval(id));
+        intervalos.current = Array(numeroCuadros).fill(null);
+
+        // Para cada cuadro, si no está detenido, le asigno un intervalo para que cambie de color cada segundo
+        coloresActuales.forEach((_, indice) => {
+            if (!cuadrosDetenidos[indice]) {
+                intervalos.current[indice] = setInterval(() => {
+                    setColoresActuales((prev) => {
+                        if (cuadrosDetenidos[indice]) return prev; // si el cuadro está detenido, no cambia
+                        let color: string;
+                        do {
+                            color = colores[Math.floor(Math.random() * numeroCuadros)] as string;
+                        } while (color === prev[indice]); // aseguro que no repita el color anterior
+                        const copia = [...prev];
+                        copia[indice] = color;
+                        return copia;
+                    });
+                }, 1000);
+            }
+        });
+
+        // Limpio los intervalos al desmontar o actualizar
+        /*return () => {
+            intervalos.current.forEach(id => id && clearInterval(id));
+            intervalos.current = Array(numeroCuadros).fill(null);
+        };*/
+
+    }, [cuadrosDetenidos]);
+
 
     // Renderizo la interfaz del juego
     return (
