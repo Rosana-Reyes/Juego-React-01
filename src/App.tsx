@@ -1,11 +1,10 @@
 // Importo React y hooks necesarios
 import React, { useEffect, useRef, FC, useState } from 'react';
 
-const numeroCuadros = 4;
+const numeroCuadros = 5;
 // Lista de colores hexadecimales para los cuadros (se pueden agregar o quitar colores y el juego se adapta)
 const colores: string[] = ['#ff1900', '#0099ff', '#00a444'];
 
-// Componente principal del juego - para controlar la cantidad de cuadros dependiendo de la cantidad de colores utilizo colores.length como variable principal
 const App: FC = () => {
     // Estado para el mensaje de resultado (ganaste/perdiste)
     const [resultado, setResultado] = useState<string>('');
@@ -17,11 +16,11 @@ const App: FC = () => {
 
     // Estado para los colores actuales de los cuadros (un color por cada cuadro)
     const [coloresActuales, setColoresActuales] = useState<string[]>(
-        Array.from({ length: numeroCuadros }, () => colores[Math.floor(Math.random() * numeroCuadros)] as string)
+        Array.from({ length: numeroCuadros }, () => colores[Math.floor(Math.random() * colores.length)] as string)
     );
     // Función para reiniciar el juego (colores y cuadros vuelven a su estado inicial)
     const reiniciar = () => {
-        const nuevosColores: string[] = Array.from({ length: numeroCuadros }, () => colores[Math.floor(Math.random() * numeroCuadros)] as string);
+        const nuevosColores: string[] = Array.from({ length: numeroCuadros }, () => colores[Math.floor(Math.random() * colores.length)] as string);
         setCuadrosDetenidos(Array(numeroCuadros).fill(false));
         setColoresActuales(nuevosColores);
         setResultado('');
@@ -65,9 +64,9 @@ const App: FC = () => {
     // Sincronizar los estados si cambia la cantidad de colores (por ejemplo, si agregas/quitas colores)
     useEffect(() => {
         setCuadrosDetenidos(Array(numeroCuadros).fill(false));
-        setColoresActuales(Array.from({ length: numeroCuadros }, () => colores[Math.floor(Math.random() * numeroCuadros)] as string));
+        setColoresActuales(Array.from({ length: numeroCuadros }, () => colores[Math.floor(Math.random() * colores.length)] as string));
         intervalos.current = Array(numeroCuadros).fill(null); // reinicio los intervalos
-    }, [numeroCuadros]);
+    }, [numeroCuadros, colores.length]);
 
 
     // Efecto para manejar el cambio automático de color de los cuadros
@@ -84,7 +83,7 @@ const App: FC = () => {
                         if (cuadrosDetenidos[indice]) return prev; // si el cuadro está detenido, no cambia
                         let color: string;
                         do {
-                            color = colores[Math.floor(Math.random() * numeroCuadros)] as string;
+                            color = colores[Math.floor(Math.random() * colores.length)] as string;
                         } while (color === prev[indice]); // aseguro que no repita el color anterior
                         const copia = [...prev];
                         copia[indice] = color;
@@ -95,10 +94,10 @@ const App: FC = () => {
         });
 
         // Limpio los intervalos al desmontar o actualizar
-        /*return () => {
+        return () => {
             intervalos.current.forEach(id => id && clearInterval(id));
             intervalos.current = Array(numeroCuadros).fill(null);
-        };*/
+        };
 
     }, [cuadrosDetenidos]);
 
@@ -106,6 +105,7 @@ const App: FC = () => {
     // Renderizo la interfaz del juego
     return (
         <div className="App"> {/* Contenedor principal */}
+            {JSON.stringify(cuadrosDetenidos)} {/* Para depuración, muestra los colores actuales en formato JSON */}
             <div className="contenedor-juego"> {/* Contenedor de los cuadros */}
                 {coloresActuales.map((color, indice) => (
                     <div key={indice} className="cuadro"> {/* Cada cuadro */}
